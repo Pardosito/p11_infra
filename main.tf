@@ -1,28 +1,13 @@
-resource "cloudflare_d1_database" "app" {
+module "d1" {
+  source = "./modules/d1"
   account_id = var.account_id
-  name = var.d1_database_name
+  d1_database_name = var.d1_database_name
+  cloudflare_api_token = var.cloudflare_api_token
 }
 
-resource "cloudflare_workers_script" "hello" {
+module "worker" {
+  source = "./modules/worker"
   account_id = var.account_id
-  script_name = var.worker_name
-  main_module = "worker.js"
-  content = file("${path.module}/worker.js")
-  compatibility_date = "2025-10-29"
-  bindings = [ {
-    name = "DB"
-    type = "d1"
-    id = cloudflare_d1_database.app.id
-  } ]
-}
-
-resource "cloudflare_workers_script_subdomain" "hello" {
-  account_id = var.account_id
-  script_name = cloudflare_workers_script.hello.script_name
-  enabled = true
-}
-
-data "cloudflare_worker" "hello" {
-  account_id = var.account_id
-  worker_id = cloudflare_workers_script.hello.id
+  worker_name = var.worker_name
+  cloudflare_api_token = var.cloudflare_api_token
 }
